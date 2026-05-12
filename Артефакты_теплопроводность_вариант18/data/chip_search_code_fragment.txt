@@ -1,0 +1,24 @@
+points, triangles, boundary = build_mesh_variant18(R)
+K = assemble_stiffness(points, triangles, k)
+
+for Text in [-20, 20]:
+    dirichlet = external_boundary_nodes(boundary, except_label=2)
+    dirichlet += processor_nodes(points, processor_rect)
+    values = np.full(len(points), Text)
+    values[processor_nodes] = 40
+    T = solve_laplace(K, dirichlet, values)
+    fields.append(T)
+
+valid = []
+for x0 in x_grid:
+    for y0 in y_grid:
+        x, y = chip_points(x0, y0, Wmicro, Hmicro)
+        if inside_board(x, y) and not intersects_processor(x0, y0):
+            t1 = interp_minus(x, y)
+            t2 = interp_plus(x, y)
+            if t1.min() >= -10 and t1.max() <= 30:
+                if t2.min() >= -10 and t2.max() <= 30:
+                    valid.append([x0, y0, t1.mean(), t2.mean()])
+
+valid.sort(key=lambda row: row[3])
+best_options = select_separated_positions(valid, count=2)
