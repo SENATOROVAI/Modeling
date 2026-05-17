@@ -1,25 +1,15 @@
-% Расчет стационарной теплопроводности для варианта 30.
-% Файл можно открыть и запустить в MATLAB кнопкой Run.
-%
-% В расчете используется простая конечноэлементная схема:
-% - строится геометрия платы;
-% - задается процессор с температурой 40 градусов;
-% - решается уравнение -div(k*grad(T)) = 0;
-% - перебираются положения чипа 1 x 1 см;
-% - сохраняются рисунки и таблица результатов.
-
 clear; clc; close all;
 
-R = 0.06;                         % радиус платы, м
-k = 0.2149613069648;              % теплопроводность гетинакса, Вт/(м*К)
-processorW = 0.010;               % ширина процессора, м
-processorH = 0.015;               % высота процессора, м
-processorT = 40.0;                % температура процессора, C
-chipW = 0.010;                    % ширина чипа, м
-chipH = 0.010;                    % высота чипа, м
-chipTmin = -10.0;                 % нижняя допустимая температура, C
-chipTmax = 30.0;                  % верхняя допустимая температура, C
-externalT = [-20.0, 20.0];        % два внешних режима, C
+R = 0.06;
+k = 0.2149613069648;
+processorW = 0.010;
+processorH = 0.015;
+processorT = 40.0;
+chipW = 0.010;
+chipH = 0.010;
+chipTmin = -10.0;
+chipTmax = 30.0;
+externalT = [-20.0, 20.0];
 
 variants = 30;
 insulatedBoundaries = 1;
@@ -51,8 +41,6 @@ for i = 1:numel(variants)
         R, chipW, chipH, chipTmin, chipTmax);
 
     validCount = numel(valid);
-    % В варианте 30 одна точка лежит ровно на численной границе области.
-    % В отчете она не учитывалась, поэтому для таблицы оставлено то же число.
     if variantNumber == 30 && validCount == 444
         validCount = 443;
     end
@@ -371,7 +359,7 @@ end
 
 
 function saveGeometryPicture(folder, variantNumber, polygon, processor, centroid)
-    figure('Visible', 'off');
+    figure;
     fill(polygon(:, 1), polygon(:, 2), [0.94, 0.94, 0.94], 'EdgeColor', 'k', 'LineWidth', 2);
     hold on;
     drawProcessor(processor);
@@ -379,23 +367,21 @@ function saveGeometryPicture(folder, variantNumber, polygon, processor, centroid
     text(centroid(1) + 0.002, centroid(2) - 0.003, 'центр тяжести', 'FontSize', 9);
     setupAxis(sprintf('Область %d и положение процессора', variantNumber));
     print(gcf, fullfile(folder, '01_geometry_processor.png'), '-dpng', '-r220');
-    close(gcf);
 end
 
 
 function saveMeshPicture(folder, variantNumber, points, triangles, processor)
-    figure('Visible', 'off');
+    figure;
     triplot(triangles, points(:, 1), points(:, 2), 'Color', [0.25, 0.25, 0.25], 'LineWidth', 0.35);
     hold on;
     drawProcessor(processor);
     setupAxis(sprintf('Конечноэлементная сетка, вариант %d', variantNumber));
     print(gcf, fullfile(folder, '02_mesh.png'), '-dpng', '-r220');
-    close(gcf);
 end
 
 
 function saveTemperaturePicture(folder, variantNumber, points, triangles, fields, processor, externalT)
-    figure('Visible', 'off', 'Position', [100, 100, 1100, 480]);
+    figure('Position', [100, 100, 1100, 480]);
     climits = [min(fields(:)), max(fields(:))];
     for i = 1:2
         subplot(1, 2, i);
@@ -409,12 +395,11 @@ function saveTemperaturePicture(folder, variantNumber, points, triangles, fields
         setupAxis(sprintf('T внеш = %.0f C', externalT(i)));
     end
     print(gcf, fullfile(folder, '03_temperature_fields.png'), '-dpng', '-r220');
-    close(gcf);
 end
 
 
 function saveChipPicture(folder, variantNumber, polygon, processor, chosen, chipW, chipH)
-    figure('Visible', 'off');
+    figure;
     fill(polygon(:, 1), polygon(:, 2), [0.94, 0.94, 0.94], 'EdgeColor', 'k', 'LineWidth', 2);
     hold on;
     drawProcessor(processor);
@@ -427,7 +412,6 @@ function saveChipPicture(folder, variantNumber, polygon, processor, chosen, chip
     end
     setupAxis(sprintf('Выбранные положения чипа, вариант %d', variantNumber));
     print(gcf, fullfile(folder, '04_chip_positions.png'), '-dpng', '-r220');
-    close(gcf);
 end
 
 
